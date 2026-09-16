@@ -401,7 +401,7 @@ pnpm extension:package
 pnpm release:macos
 ```
 
-`WXT_INSTALLER_URL`이 없으면 설치 안내 버튼은 확장 프로그램 안의 `setup.html`로 연결됩니다. 정식 배포에서는 사용자에게 실제 설치 파일을 제공하는 HTTPS URL을 설정하세요.
+설치 안내 버튼은 항상 확장 프로그램 안의 `setup.html`을 먼저 열어 설치 단계와 연결 상태를 보여 줍니다. `WXT_INSTALLER_URL`이 설정된 정식 빌드에서는 그 화면에 실제 `.pkg`를 여는 **macOS용 엔진 다운로드** 버튼이 표시됩니다. 설정하지 않은 소스 개발 빌드에서만 개발자용 수동 명령을 표시합니다.
 
 ### 스토어 등록 문구 주의
 

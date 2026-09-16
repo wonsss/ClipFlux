@@ -83,6 +83,7 @@ summary { border-radius: 4px; cursor: pointer; }
 .setup .primary, .setup button { display: block; width: 100%; margin-top: 9px; }
 .setup .primary { border-color: var(--accent); background: var(--accent); color: #fff; }
 .setup .primary:hover { background: #0756bc; }
+.setup-help { margin: 13px 0 0; font-size: 11px; }
 @media (prefers-color-scheme: dark) {
   :root { --bg: #212121; --surface: #2b2b2b; --surface-hover: #3a3a3a; --text: #f1f1f1; --muted: #aaa; --line: #3f3f3f; --accent: #3ea6ff; --success: #6dd58c; --danger: #ff897d; }
   select, button, .primary { border-color: #515151; }

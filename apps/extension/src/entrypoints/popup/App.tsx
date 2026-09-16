@@ -4,7 +4,7 @@ import {
   type DownloadQueueTask, type ExtensionSettings, type HelperMessage, type HelperSettings, type RuntimeStatus,
 } from '@local-downloader/protocol';
 import { saveExtensionSettings, getExtensionSettings } from '../../lib/storage';
-import { installerUrl } from '../../lib/installer';
+import { hasPublicInstaller, installerUrl } from '../../lib/installer';
 import { AudioDownloadIcon, CheckIcon, CloseIcon, OpenFileIcon, VideoDownloadIcon } from '../../features/downloader/icons';
 
 const qualityOptions = [
@@ -46,7 +46,7 @@ export function App() {
   const updateExtension = (next: ExtensionSettings): void => { setExtensionSettings(next); void saveExtensionSettings(next); };
   const patch = (mutate: (next: HelperSettings) => void): void => { const next = structuredClone(settings); mutate(next); save(next); };
 
-  if (unavailable) return <main className="popup setup"><h1>ClipFlux</h1><div className="setup-icon"><VideoDownloadIcon /></div><h2>Downloader setup required</h2><p>다운로드 기능을 사용하려면 Downloader Engine을 한 번 설치해야 합니다.</p><a className="primary" href={installerUrl()} target="_blank" rel="noreferrer">Install Downloader</a><button onClick={() => { setUnavailable(false); setHealth(null); port.current?.postMessage({ type: 'health_check' }); }}>Check again</button></main>;
+  if (unavailable) return <main className="popup setup"><h1>ClipFlux</h1><div className="setup-icon"><VideoDownloadIcon /></div><h2>다운로드 엔진을 설치해 주세요</h2><p>한 번만 설치하면 Video와 Audio를 바로 저장할 수 있습니다. 개발 도구나 터미널은 필요하지 않습니다.</p><a className="primary" href={installerUrl()} target="_blank" rel="noreferrer">{hasPublicInstaller() ? 'macOS용 엔진 다운로드' : '설치 안내 열기'}</a><button onClick={() => { setUnavailable(false); setHealth(null); port.current?.postMessage({ type: 'health_check' }); }}>설치 후 다시 확인</button><p className="setup-help">설치 파일을 열어 설치한 뒤 이 버튼을 누르세요.</p></main>;
 
   return <main className="popup">
     <header><div><h1>ClipFlux</h1><p className={health?.ready ? 'ready' : 'checking'}><span />{health === null ? 'Checking…' : health.ready ? 'Ready' : 'Setup incomplete'}</p></div></header>

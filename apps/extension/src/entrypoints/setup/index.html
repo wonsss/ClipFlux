@@ -1,5 +1,39 @@
 <!doctype html>
 <html lang="ko">
-  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>ClipFlux Setup</title></head>
-  <body><main><div class="icon">↓</div><h1>ClipFlux 설정</h1><p>아직 공개 설치 파일 URL이 설정되지 않았습니다. 로컬 개발 버전은 프로젝트 루트의 터미널에서 아래 명령을 실행하세요.</p><pre><code id="command"></code></pre><button id="copy" type="button">명령 복사</button><p class="hint">설치 후 확장 프로그램 팝업으로 돌아가 <strong>Check again</strong>을 누르세요.</p></main><script type="module" src="./main.ts"></script></body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ClipFlux 다운로드 엔진 설치</title>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" /></svg></div>
+        <h1>다운로드 엔진 설치</h1>
+        <p class="lede">한 번 설치하면 ClipFlux가 필요한 도구를 자동으로 준비하고, 모든 다운로드는 이 Mac에서 처리됩니다.</p>
+      </header>
+
+      <ol class="steps" aria-label="설치 단계">
+        <li><span>1</span><div><strong>설치 파일 열기</strong><small>macOS 설치 파일을 열고 안내에 따라 설치합니다.</small></div></li>
+        <li><span>2</span><div><strong>ClipFlux로 돌아오기</strong><small>설치가 끝나면 이 탭에서 연결을 확인합니다.</small></div></li>
+        <li><span>3</span><div><strong>첫 다운로드 시작</strong><small>YouTube 페이지의 Video 또는 Audio 버튼을 누릅니다.</small></div></li>
+      </ol>
+
+      <section class="status" id="status" aria-live="polite">
+        <i></i><div><strong>엔진을 찾는 중입니다</strong><span>설치가 이미 끝났다면 연결 확인을 눌러 주세요.</span></div>
+      </section>
+
+      <div class="actions"><a id="download" class="primary" href="#">macOS용 엔진 다운로드</a><button id="check" type="button">설치 후 연결 확인</button></div>
+
+      <details id="developer-guide" class="developer-guide">
+        <summary>개발자용 수동 설치</summary>
+        <p>공개 설치 패키지가 아직 준비되지 않은 소스 개발 환경에서만 사용합니다.</p>
+        <pre><code id="command"></code></pre>
+        <button id="copy" type="button">명령 복사</button>
+      </details>
+
+      <p class="privacy">ClipFlux는 로그인 정보나 브라우저 쿠키를 사용하지 않습니다.</p>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
 </html>

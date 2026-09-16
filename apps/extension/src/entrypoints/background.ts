@@ -65,9 +65,11 @@ export default defineBackground(() => {
   });
 
   chrome.runtime.onConnect.addListener((port) => {
-    if (port.name !== 'popup-native') return;
-    toolbar.resetCompletedCount();
-    refreshToolbar();
+    if (port.name !== 'popup-native' && port.name !== 'setup-native') return;
+    if (port.name === 'popup-native') {
+      toolbar.resetCompletedCount();
+      refreshToolbar();
+    }
     const unsubscribe = native.subscribe((event) => port.postMessage(event));
     port.onMessage.addListener((message: unknown) => {
       const request = message as { type?: string };
