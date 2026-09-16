@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="ClipFlux">
+  <rect x="8" y="8" width="112" height="112" rx="30" fill="#ff5349"/>
+  <rect x="58" y="27" width="12" height="47" rx="6" fill="#fff"/>
+  <path d="M39 62 48 53 64 69 80 53 89 62 64 87Z" fill="#fff"/>
+  <rect x="38" y="91" width="52" height="12" rx="6" fill="#fff"/>
+</svg>

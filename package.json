@@ -1,0 +1,38 @@
+{
+  "name": "local-downloader",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.15.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter @local-downloader/extension --filter @local-downloader/helper dev",
+    "build": "pnpm -r build",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json && pnpm -r typecheck",
+    "extension:dev": "pnpm --filter @local-downloader/extension dev",
+    "extension:build": "bun scripts/build-extension.ts",
+    "extension:package": "pnpm extension:build && bun scripts/package-extension.ts",
+    "helper:dev": "pnpm --filter @local-downloader/helper dev",
+    "helper:build": "bun scripts/build-helper.ts",
+    "native:install": "bun scripts/install-native-host-dev.ts",
+    "native:uninstall": "bun scripts/uninstall-native-host-dev.ts",
+    "runtime:download": "bun scripts/download-runtime-assets.ts",
+    "package:macos": "bun scripts/package-macos.ts",
+    "notarize:macos": "bun scripts/notarize-macos.ts",
+    "release:preflight:macos": "bun scripts/release-preflight-macos.ts",
+    "release:macos": "pnpm release:preflight:macos && pnpm lint && pnpm typecheck && pnpm test && pnpm runtime:download && pnpm helper:build && pnpm package:macos && pnpm notarize:macos"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "@types/node": "^24.3.1",
+    "@types/bun": "^1.4.2",
+    "@ffprobe-installer/ffprobe": "^2.1.2",
+    "ffmpeg-static": "^5.3.0",
+    "eslint": "^9.35.0",
+    "globals": "^16.3.0",
+    "typescript": "^6.0.2",
+    "typescript-eslint": "^8.42.0",
+    "vitest": "^5.0.1"
+  }
+}

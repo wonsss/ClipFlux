@@ -1,0 +1,9 @@
+packages:
+  - apps/*
+  - packages/*
+
+onlyBuiltDependencies:
+  - esbuild
+  - ffmpeg-static
+  - '@ffprobe-installer/darwin-arm64'
+  - '@ffprobe-installer/darwin-x64'
