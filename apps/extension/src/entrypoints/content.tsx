@@ -14,7 +14,7 @@ export default defineContentScript({
     let container: HTMLDivElement | null = null;
     let root: Root | null = null;
     let renderedVideoId: string | null = null;
-    let settings: ExtensionSettings = { showVideoButton: true, showAudioButton: true };
+    let settings: ExtensionSettings = { enabled: true, showVideoButton: true, showAudioButton: true };
     let scheduled = false;
 
     const setupToast = (): void => {
@@ -31,6 +31,15 @@ export default defineContentScript({
 
     const inject = (): void => {
       thumbnails.inject(settings);
+      if (!settings.enabled) {
+        root?.unmount();
+        container?.remove();
+        root = null;
+        container = null;
+        renderedVideoId = null;
+        document.querySelector('[data-local-downloader-toast]')?.remove();
+        return;
+      }
       const videoId = currentVideoId();
       if (videoId === null) { root?.unmount(); container?.remove(); root = null; container = null; renderedVideoId = null; return; }
       const anchor = findControlAnchor();

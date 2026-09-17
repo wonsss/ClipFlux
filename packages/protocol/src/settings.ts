@@ -25,11 +25,13 @@ export const DEFAULT_HELPER_SETTINGS: HelperSettings = {
 };
 
 export const ExtensionSettingsSchema = z.object({
+  enabled: z.boolean().default(true),
   showVideoButton: z.boolean(),
   showAudioButton: z.boolean(),
 }).strict();
 export type ExtensionSettings = z.infer<typeof ExtensionSettingsSchema>;
 export const DEFAULT_EXTENSION_SETTINGS: ExtensionSettings = {
+  enabled: true,
   showVideoButton: true,
   showAudioButton: true,
 };

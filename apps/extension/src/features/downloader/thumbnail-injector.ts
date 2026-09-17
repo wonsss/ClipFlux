@@ -34,6 +34,10 @@ export class ThumbnailInjector {
 
   public inject(settings: ExtensionSettings, root: ParentNode = document): void {
     this.pruneDisconnectedButtons();
+    if (!settings.enabled) {
+      for (const actions of document.querySelectorAll<HTMLElement>('[data-local-downloader-thumbnail-actions="true"]')) actions.hidden = true;
+      return;
+    }
     for (const card of root.querySelectorAll<HTMLElement>(CARD_SELECTOR)) {
       const link = this.thumbnailLinkFor(card);
       if (link === null) continue;
@@ -41,6 +45,7 @@ export class ThumbnailInjector {
       if (videoId === null) continue;
       const existing = card.querySelector<HTMLElement>('[data-local-downloader-thumbnail-actions="true"]');
       if (existing !== null) {
+        existing.hidden = false;
         const host = this.thumbnailHostFor(link);
         if (host !== null && existing.parentElement !== host) {
           existing.className = 'ld-thumbnail-actions';
@@ -148,6 +153,7 @@ export class ThumbnailInjector {
   }
 
   private applyVisibility(actions: HTMLElement, settings: ExtensionSettings): void {
+    actions.hidden = !settings.enabled;
     const video = actions.querySelector<HTMLElement>('[data-kind="video"]');
     const audio = actions.querySelector<HTMLElement>('[data-kind="audio"]');
     if (video !== null) video.hidden = !settings.showVideoButton;

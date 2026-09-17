@@ -21,15 +21,15 @@ describe('ThumbnailInjector', () => {
 
   it('adds video and audio actions exactly once', () => {
     const injector = new ThumbnailInjector(vi.fn());
-    injector.inject({ showVideoButton: true, showAudioButton: true });
-    injector.inject({ showVideoButton: true, showAudioButton: true });
+    injector.inject({ enabled: true, showVideoButton: true, showAudioButton: true });
+    injector.inject({ enabled: true, showVideoButton: true, showAudioButton: true });
     expect(document.querySelectorAll('[data-local-downloader-thumbnail-actions="true"]')).toHaveLength(1);
     expect(document.querySelectorAll('.ld-thumbnail-button')).toHaveLength(2);
   });
 
   it('honors visibility settings and sends a structured download', () => {
     const injector = new ThumbnailInjector(vi.fn());
-    injector.inject({ showVideoButton: false, showAudioButton: true });
+    injector.inject({ enabled: true, showVideoButton: false, showAudioButton: true });
     const video = document.querySelector<HTMLButtonElement>('[data-kind="video"]');
     const audio = document.querySelector<HTMLButtonElement>('[data-kind="audio"]');
     expect(video?.hidden).toBe(true);
@@ -39,6 +39,18 @@ describe('ThumbnailInjector', () => {
     expect(parsed).toMatchObject({ type: 'start_download', payload: { videoId: 'dQw4w9WgXcQ', kind: 'audio', displayTitle: 'A useful video' } });
   });
 
+  it('hides existing card actions and skips injection while disabled', () => {
+    const injector = new ThumbnailInjector(vi.fn());
+    injector.inject({ enabled: true, showVideoButton: true, showAudioButton: true });
+    injector.inject({ enabled: false, showVideoButton: true, showAudioButton: true });
+
+    expect(document.querySelector<HTMLElement>('[data-local-downloader-thumbnail-actions="true"]')?.hidden).toBe(true);
+
+    document.body.insertAdjacentHTML('beforeend', '<ytd-rich-item-renderer><ytd-thumbnail><a id="thumbnail" href="https://www.youtube.com/watch?v=aqz-KE-bpKQ"></a></ytd-thumbnail></ytd-rich-item-renderer>');
+    injector.inject({ enabled: false, showVideoButton: true, showAudioButton: true });
+    expect(document.querySelectorAll('[data-local-downloader-thumbnail-actions="true"]')).toHaveLength(1);
+  });
+
   it('marks previously downloaded video and audio independently', async () => {
     sendMessage.mockImplementation((message) => Promise.resolve(
       (message as { type?: string }).type === 'get_download_history'
@@ -46,7 +58,7 @@ describe('ThumbnailInjector', () => {
         : { accepted: true },
     ));
     const injector = new ThumbnailInjector(vi.fn());
-    injector.inject({ showVideoButton: true, showAudioButton: true });
+    injector.inject({ enabled: true, showVideoButton: true, showAudioButton: true });
 
     await vi.waitFor(() => {
       expect(document.querySelector<HTMLButtonElement>('[data-kind="video"]')?.dataset['state']).toBe('complete');
@@ -58,7 +70,7 @@ describe('ThumbnailInjector', () => {
 
   it('updates every matching card when the same video completes elsewhere', () => {
     const injector = new ThumbnailInjector(vi.fn());
-    injector.inject({ showVideoButton: true, showAudioButton: true });
+    injector.inject({ enabled: true, showVideoButton: true, showAudioButton: true });
 
     runtimeListener?.({
       type: 'native_event',
@@ -95,7 +107,7 @@ describe('ThumbnailInjector', () => {
       </ytd-rich-item-renderer>`;
 
     const injector = new ThumbnailInjector(vi.fn());
-    injector.inject({ showVideoButton: true, showAudioButton: true });
+    injector.inject({ enabled: true, showVideoButton: true, showAudioButton: true });
 
     const host = document.querySelector('yt-thumbnail-view-model');
     expect(host?.classList.contains('ld-thumbnail-host')).toBe(true);
@@ -113,7 +125,7 @@ describe('ThumbnailInjector', () => {
       </ytd-rich-item-renderer>`;
 
     const injector = new ThumbnailInjector(vi.fn());
-    injector.inject({ showVideoButton: true, showAudioButton: true });
+    injector.inject({ enabled: true, showVideoButton: true, showAudioButton: true });
 
     const thumbnail = document.querySelector('ytd-thumbnail');
     const metadata = document.querySelector('.ytLockupMetadataViewModelMetadata');
@@ -132,7 +144,7 @@ describe('ThumbnailInjector', () => {
       </ytd-watch-next-secondary-results-renderer>`;
 
     const injector = new ThumbnailInjector(vi.fn());
-    injector.inject({ showVideoButton: true, showAudioButton: true });
+    injector.inject({ enabled: true, showVideoButton: true, showAudioButton: true });
 
     const thumbnail = document.querySelector('ytd-thumbnail');
     const menu = document.querySelector('#menu');
