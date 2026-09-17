@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { DownloadHistoryEntry, DownloadKind, DownloadStatus, HelperMessage } from '@local-downloader/protocol';
 import { AudioDownloadIcon, CheckIcon, VideoDownloadIcon } from './icons';
+import { safeSendRuntimeMessage } from '../../lib/extension-context';
 
 type TaskState = { taskId: string; status: DownloadStatus; percent?: number; position?: number; error?: string };
 type Props = { videoId: string; displayTitle: string; showVideo: boolean; showAudio: boolean; onSetupRequired: () => void };
@@ -23,7 +24,7 @@ export function Controls({ videoId, displayTitle, showVideo, showAudio, onSetupR
     let active = true;
     setTasks({});
     setSaved({});
-    void chrome.runtime.sendMessage({ type: 'get_download_history' }).then((history: DownloadHistoryEntry[]) => {
+    void safeSendRuntimeMessage<DownloadHistoryEntry[]>({ type: 'get_download_history' }).then((history) => {
       if (!active) return;
       setSaved({
         video: history.some((entry) => entry.videoId === videoId && entry.kind === 'video'),
@@ -55,8 +56,8 @@ export function Controls({ videoId, displayTitle, showVideo, showAudio, onSetupR
         return { ...current, [kind]: { ...current[kind], status: 'completed' } };
       });
     };
-    chrome.runtime.onMessage.addListener(listener);
-    return () => chrome.runtime.onMessage.removeListener(listener);
+    try { chrome.runtime.onMessage.addListener(listener); } catch { return undefined; }
+    return () => { try { chrome.runtime.onMessage.removeListener(listener); } catch { /* stale context */ } };
   }, [onSetupRequired, videoId]);
 
   const start = (kind: DownloadKind): void => {
@@ -64,7 +65,7 @@ export function Controls({ videoId, displayTitle, showVideo, showAudio, onSetupR
     if (active !== undefined && !['failed', 'completed'].includes(active.status)) return;
     const taskId = crypto.randomUUID();
     setTasks((current) => ({ ...current, [kind]: { taskId, status: 'queued' } }));
-    void chrome.runtime.sendMessage({
+    void safeSendRuntimeMessage({
       type: 'start_download',
       payload: { taskId, videoId, kind, displayTitle, url: `https://www.youtube.com/watch?v=${videoId}` },
     }).catch(() => { onSetupRequired(); setTasks((current) => ({ ...current, [kind]: { taskId, status: 'failed', error: 'Downloader setup required' } })); });

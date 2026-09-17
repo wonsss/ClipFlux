@@ -5,6 +5,7 @@ import { Controls } from '../features/downloader/Controls';
 import { currentVideoId, ensureControlsMount, findControlAnchor } from '../features/downloader/page';
 import { installerUrl } from '../lib/installer';
 import { ThumbnailInjector } from '../features/downloader/thumbnail-injector';
+import { safeSendRuntimeMessage } from '../lib/extension-context';
 import '../assets/content.css';
 
 export default defineContentScript({
@@ -14,6 +15,8 @@ export default defineContentScript({
     let container: HTMLDivElement | null = null;
     let root: Root | null = null;
     let renderedVideoId: string | null = null;
+    let contextInvalidated = false;
+    const observerRef: { current?: MutationObserver } = {};
     let settings: ExtensionSettings = { enabled: true, showVideoButton: true, showAudioButton: true };
     let scheduled = false;
 
@@ -28,8 +31,10 @@ export default defineContentScript({
       setTimeout(() => toast.remove(), 12000);
     };
     const thumbnails = new ThumbnailInjector(setupToast);
+    const stopForInvalidatedContext = (): void => { contextInvalidated = true; observerRef.current?.disconnect(); };
 
     const inject = (): void => {
+      if (contextInvalidated) return;
       thumbnails.inject(settings);
       if (!settings.enabled) {
         root?.unmount();
@@ -59,14 +64,14 @@ export default defineContentScript({
       requestAnimationFrame(() => { scheduled = false; inject(); });
     };
 
-    void chrome.runtime.sendMessage({ type: 'get_extension_settings' }).then((value: ExtensionSettings) => { settings = value; inject(); });
-    chrome.storage.onChanged.addListener((changes, area) => {
+    void safeSendRuntimeMessage<ExtensionSettings>({ type: 'get_extension_settings' }).then((value) => { settings = value; inject(); }).catch(stopForInvalidatedContext);
+    try { chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== 'local' || changes['extensionSettings'] === undefined) return;
-      void chrome.runtime.sendMessage({ type: 'get_extension_settings' }).then((value: ExtensionSettings) => { settings = value; inject(); });
-    });
+      void safeSendRuntimeMessage<ExtensionSettings>({ type: 'get_extension_settings' }).then((value) => { settings = value; inject(); }).catch(stopForInvalidatedContext);
+    }); } catch { stopForInvalidatedContext(); }
     document.addEventListener('yt-navigate-finish', scheduleInject);
-    const observer = new MutationObserver(scheduleInject);
-    observer.observe(document.documentElement, { childList: true, subtree: true });
+    observerRef.current = new MutationObserver(() => { if (!contextInvalidated) scheduleInject(); });
+    observerRef.current.observe(document.documentElement, { childList: true, subtree: true });
     inject();
   },
 });

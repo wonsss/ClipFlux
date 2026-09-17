@@ -1,5 +1,6 @@
 import type { DownloadHistoryEntry, DownloadKind, ExtensionSettings, HelperMessage } from '@local-downloader/protocol';
 import { currentVideoId } from './page';
+import { safeSendRuntimeMessage } from '../../lib/extension-context';
 
 const CARD_SELECTOR = [
   'ytd-rich-item-renderer',
@@ -23,8 +24,8 @@ export class ThumbnailInjector {
   private readonly downloaded = new Set<string>();
 
   public constructor(private readonly onSetupRequired: () => void) {
-    chrome.runtime.onMessage.addListener((raw: unknown) => this.onNativeEvent(raw));
-    void chrome.runtime.sendMessage({ type: 'get_download_history' }).then((history: DownloadHistoryEntry[]) => {
+    try { chrome.runtime.onMessage.addListener((raw: unknown) => this.onNativeEvent(raw)); } catch { /* stale context */ }
+    void safeSendRuntimeMessage<DownloadHistoryEntry[]>({ type: 'get_download_history' }).then((history) => {
       for (const entry of history) this.downloaded.add(this.downloadKey(entry.videoId, entry.kind));
       for (const [key, buttons] of this.buttonsByDownload) {
         if (this.downloaded.has(key)) for (const button of buttons) this.markDownloaded(button);
@@ -88,7 +89,7 @@ export class ThumbnailInjector {
       button.setAttribute('aria-busy', 'true');
       button.style.setProperty('--ld-progress', '0');
       this.taskButtons.set(taskId, button);
-      void chrome.runtime.sendMessage({
+      void safeSendRuntimeMessage({
         type: 'start_download',
         payload: { taskId, videoId, kind, displayTitle: title, url: `https://www.youtube.com/watch?v=${videoId}` },
       }).catch(() => { this.onSetupRequired(); this.fail(button, taskId, 'Downloader setup required'); });
