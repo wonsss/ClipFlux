@@ -41,41 +41,24 @@ export class ThumbnailInjector {
       if (videoId === null) continue;
       const existing = card.querySelector<HTMLElement>('[data-local-downloader-thumbnail-actions="true"]');
       if (existing !== null) {
+        const host = this.thumbnailHostFor(link);
+        if (host !== null && existing.parentElement !== host) {
+          existing.className = 'ld-thumbnail-actions';
+          host.classList.add('ld-thumbnail-host');
+          host.append(existing);
+        }
         this.applyVisibility(existing, settings);
         continue;
       }
       const actions = document.createElement('div');
       actions.dataset['localDownloaderThumbnailActions'] = 'true';
+      actions.className = 'ld-thumbnail-actions';
       const title = this.titleFor(card);
       actions.append(this.button('video', videoId, title), this.button('audio', videoId, title));
-      const lockupMetadataHost = this.lockupMetadataHostFor(card);
-      if (lockupMetadataHost !== null) {
-        actions.className = 'ld-lockup-metadata-actions';
-        lockupMetadataHost.classList.add('ld-lockup-metadata-host');
-        lockupMetadataHost.append(actions);
-        this.applyVisibility(actions, settings);
-        continue;
-      }
-      const compactMenu = this.compactMenuFor(card);
-      if (compactMenu !== null) {
-        actions.className = 'ld-compact-actions';
-        compactMenu.classList.add('ld-compact-menu-host');
-        compactMenu.prepend(actions);
-      } else {
-        const metadata = this.metadataHostFor(card);
-        if (metadata !== null) {
-          actions.className = 'ld-card-metadata-actions';
-          metadata.classList.add('ld-card-metadata-host');
-          metadata.append(actions);
-          this.applyVisibility(actions, settings);
-          continue;
-        }
-        const host = this.thumbnailHostFor(card, link);
-        if (host === null) continue;
-        actions.className = 'ld-thumbnail-actions';
-        host.classList.add('ld-thumbnail-host');
-        host.append(actions);
-      }
+      const host = this.thumbnailHostFor(link);
+      if (host === null) continue;
+      host.classList.add('ld-thumbnail-host');
+      host.append(actions);
       this.applyVisibility(actions, settings);
     }
   }
@@ -180,42 +163,12 @@ export class ThumbnailInjector {
     return nestedLink ?? card.querySelector<HTMLAnchorElement>(THUMBNAIL_SELECTOR);
   }
 
-  private thumbnailHostFor(card: HTMLElement, link: HTMLAnchorElement): HTMLElement | null {
-    const lockupHost = link.closest<HTMLElement>('.ytLockupViewModelHost');
-    if (lockupHost !== null) return lockupHost;
+  private thumbnailHostFor(link: HTMLAnchorElement): HTMLElement | null {
+    const nestedThumbnail = link.querySelector<HTMLElement>('ytd-thumbnail, yt-thumbnail-view-model');
+    if (nestedThumbnail !== null) return nestedThumbnail;
     const ancestor = link.closest<HTMLElement>('ytd-thumbnail, yt-thumbnail-view-model');
     if (ancestor !== null) return ancestor;
-    return card.querySelector<HTMLElement>('ytd-thumbnail, yt-thumbnail-view-model');
-  }
-
-  private metadataHostFor(card: HTMLElement): HTMLElement | null {
-    const explicit = card.querySelector<HTMLElement>('.ytLockupMetadataViewModelMetadata, .yt-lockup-metadata-view-model__metadata, .ytLockupMetadataViewModelMetadataRow, #metadata-line');
-    if (explicit !== null) return explicit;
-
-    const viewCount = Array.from(card.querySelectorAll<HTMLElement>('*'))
-      .filter((element) => /(?:조회수\s*[\d.,만천억]+회|\d[\d,.]*\s+views?)/i.test(element.textContent.trim()))
-      .sort((left, right) => left.textContent.length - right.textContent.length)[0];
-    if (viewCount === undefined) return null;
-
-    const parent = viewCount.parentElement;
-    const agePattern = /(?:\d+\s*(?:년|개월|일|시간|분)\s*전|\d+\s+(?:years?|months?|days?|hours?)\s+ago)/i;
-    if (parent !== null && agePattern.test(parent.textContent)) return parent;
-    if (parent !== null && parent.parentElement !== null && agePattern.test(parent.parentElement.textContent)) {
-      return parent.parentElement;
-    }
-    return parent;
-  }
-
-  private lockupMetadataHostFor(card: HTMLElement): HTMLElement | null {
-    return card.querySelector<HTMLElement>('yt-lockup-metadata-view-model.ytLockupMetadataViewModelHost');
-  }
-
-  private compactMenuFor(card: HTMLElement): HTMLElement | null {
-    if (card.matches('ytd-compact-video-renderer')) return card.querySelector<HTMLElement>('#menu');
-    if (card.closest('#secondary') !== null) return card.querySelector<HTMLElement>('#menu');
-    const sidebarCard = card.closest<HTMLElement>('#secondary ytd-compact-video-renderer, ytd-watch-next-secondary-results-renderer ytd-compact-video-renderer');
-    if (sidebarCard !== null) return sidebarCard.querySelector<HTMLElement>('#menu');
-    return null;
+    return link;
   }
 
   private titleFor(card: HTMLElement): string {

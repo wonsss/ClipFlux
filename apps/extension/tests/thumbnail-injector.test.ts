@@ -76,7 +76,7 @@ describe('ThumbnailInjector', () => {
     expect(document.querySelector<HTMLButtonElement>('[data-kind="audio"]')?.dataset['state']).toBeUndefined();
   });
 
-  it('supports the current YouTube lockup card markup', () => {
+  it('places current YouTube lockup card actions inside the thumbnail', () => {
     document.body.innerHTML = `
       <ytd-rich-item-renderer>
         <yt-lockup-view-model>
@@ -97,15 +97,15 @@ describe('ThumbnailInjector', () => {
     const injector = new ThumbnailInjector(vi.fn());
     injector.inject({ showVideoButton: true, showAudioButton: true });
 
-    const host = document.querySelector('.ytLockupMetadataViewModelHost');
-    expect(host?.classList.contains('ld-lockup-metadata-host')).toBe(true);
-    expect(host?.lastElementChild?.classList.contains('ld-lockup-metadata-actions')).toBe(true);
+    const host = document.querySelector('yt-thumbnail-view-model');
+    expect(host?.classList.contains('ld-thumbnail-host')).toBe(true);
+    expect(host?.lastElementChild?.classList.contains('ld-thumbnail-actions')).toBe(true);
     expect(host?.querySelectorAll('.ld-thumbnail-button')).toHaveLength(2);
     expect(host?.querySelector<HTMLButtonElement>('[data-kind="video"]')?.getAttribute('aria-label'))
       .toBe('Big Buck Bunny 비디오 다운로드');
   });
 
-  it('places home-feed actions at the end of the metadata row', () => {
+  it('places home-feed actions in the thumbnail rather than metadata', () => {
     document.body.innerHTML = `
       <ytd-rich-item-renderer>
         <ytd-thumbnail><a id="thumbnail" href="https://www.youtube.com/watch?v=aqz-KE-bpKQ"></a></ytd-thumbnail>
@@ -115,26 +115,14 @@ describe('ThumbnailInjector', () => {
     const injector = new ThumbnailInjector(vi.fn());
     injector.inject({ showVideoButton: true, showAudioButton: true });
 
+    const thumbnail = document.querySelector('ytd-thumbnail');
     const metadata = document.querySelector('.ytLockupMetadataViewModelMetadata');
-    expect(metadata?.classList.contains('ld-card-metadata-host')).toBe(true);
-    expect(metadata?.querySelectorAll('.ld-card-metadata-actions .ld-thumbnail-button')).toHaveLength(2);
+    expect(thumbnail?.classList.contains('ld-thumbnail-host')).toBe(true);
+    expect(thumbnail?.querySelectorAll('.ld-thumbnail-actions .ld-thumbnail-button')).toHaveLength(2);
+    expect(metadata?.querySelector('.ld-thumbnail-actions')).toBeNull();
   });
 
-  it('finds a nested view-count label when anchoring home-feed actions', () => {
-    document.body.innerHTML = `
-      <ytd-rich-item-renderer>
-        <ytd-thumbnail><a id="thumbnail" href="https://www.youtube.com/watch?v=aqz-KE-bpKQ"></a></ytd-thumbnail>
-        <div class="metadata-row"><span><yt-attributed-string>조회수 389만회</yt-attributed-string></span><span> · 4년 전</span></div>
-      </ytd-rich-item-renderer>`;
-
-    const injector = new ThumbnailInjector(vi.fn());
-    injector.inject({ showVideoButton: true, showAudioButton: true });
-
-    const metadata = document.querySelector('.metadata-row');
-    expect(metadata?.classList.contains('ld-card-metadata-host')).toBe(true);
-  });
-
-  it('places sidebar recommendation actions before the more menu', () => {
+  it('places sidebar recommendation actions in the thumbnail rather than the more menu', () => {
     document.body.innerHTML = `
       <ytd-watch-next-secondary-results-renderer>
         <ytd-compact-video-renderer>
@@ -146,9 +134,10 @@ describe('ThumbnailInjector', () => {
     const injector = new ThumbnailInjector(vi.fn());
     injector.inject({ showVideoButton: true, showAudioButton: true });
 
+    const thumbnail = document.querySelector('ytd-thumbnail');
     const menu = document.querySelector('#menu');
-    expect(menu?.classList.contains('ld-compact-menu-host')).toBe(true);
-    expect(menu?.firstElementChild?.classList.contains('ld-compact-actions')).toBe(true);
-    expect(menu?.querySelectorAll('.ld-compact-actions .ld-thumbnail-button')).toHaveLength(2);
+    expect(thumbnail?.classList.contains('ld-thumbnail-host')).toBe(true);
+    expect(thumbnail?.querySelectorAll('.ld-thumbnail-actions .ld-thumbnail-button')).toHaveLength(2);
+    expect(menu?.querySelector('.ld-thumbnail-actions')).toBeNull();
   });
 });
