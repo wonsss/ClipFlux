@@ -1,4 +1,7 @@
+import { join } from 'node:path';
+import { rm } from 'node:fs/promises';
 import { ConfigStore } from './config/config-store';
+import { DownloadRegistry } from './downloader/download-registry';
 import { DownloadRunner } from './downloader/download-runner';
 import { encodeNativeMessage, NativeMessageDecoder } from './native-messaging/framing';
 import { handleNativeMessage } from './native-messaging/host';
@@ -7,9 +10,11 @@ import { RuntimeManager } from './runtime/runtime-manager';
 import { YtDlpUpdater } from './updater/ytdlp-updater';
 
 const paths = createRuntimePaths();
+// Remove staging directories left behind by a previously killed helper.
+void rm(join(paths.applicationSupport, 'staging'), { recursive: true, force: true }).catch(() => undefined);
 const config = new ConfigStore(paths.configFile);
 const runtime = new RuntimeManager(paths);
-const runner = new DownloadRunner(runtime);
+const runner = new DownloadRunner(runtime, 2, 20, new DownloadRegistry(join(paths.applicationSupport, 'downloads.json')));
 const updater = new YtDlpUpdater(paths.ytDlp);
 const decoder = new NativeMessageDecoder();
 

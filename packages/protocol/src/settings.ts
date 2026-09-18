@@ -6,7 +6,8 @@ export const VideoQualitySchema = z.enum([
 export type VideoQuality = z.infer<typeof VideoQualitySchema>;
 
 export const VideoContainerSchema = z.enum(['mp4']);
-export const AudioFormatSchema = z.enum(['original', 'm4a', 'mp3']);
+// Legacy configs may still store 'original'; normalize it to m4a so only mp3/m4a are produced.
+export const AudioFormatSchema = z.enum(['m4a', 'mp3']).catch('m4a');
 export const Mp3BitrateSchema = z.union([z.literal(320), z.literal(256), z.literal(192)]);
 
 export const HelperSettingsSchema = z.object({
@@ -19,7 +20,7 @@ export type HelperSettings = z.infer<typeof HelperSettingsSchema>;
 
 export const DEFAULT_HELPER_SETTINGS: HelperSettings = {
   video: { quality: 'best-up-to-1080p', container: 'mp4' },
-  audio: { format: 'original', mp3Bitrate: 320 },
+  audio: { format: 'm4a', mp3Bitrate: 320 },
   output: { baseDirectory: '~/Downloads/YouTube', separateFolders: true },
   updates: { automaticYtDlp: true },
 };

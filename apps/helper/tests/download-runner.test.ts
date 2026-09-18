@@ -12,7 +12,7 @@ describe('DownloadRunner integration', () => {
     const directory = await mkdtemp(join(tmpdir(), 'local-downloader-test-'));
     const paths = createRuntimePaths(directory);
     await mkdir(paths.runtimeDirectory, { recursive: true });
-    await writeFile(paths.ytDlp, `#!${process.execPath}\nprocess.stdout.write('LOCAL_DOWNLOADER_PROGRESS|25|100|NA|5|15\\n');\nprocess.stdout.write('LOCAL_DOWNLOADER_PROCESSING|dQw4w9WgXcQ\\n');\nprocess.stdout.write('LOCAL_DOWNLOADER_COMPLETE|${directory}/video.mp4\\n');\n`);
+    await writeFile(paths.ytDlp, `#!${process.execPath}\nrequire('node:fs').writeFileSync('${directory}/video.mp4', 'fake video');\nprocess.stdout.write('LOCAL_DOWNLOADER_PROGRESS|25|100|NA|5|15\\n');\nprocess.stdout.write('LOCAL_DOWNLOADER_COMPLETE|${directory}/video.mp4\\n');\n`);
     await chmod(paths.ytDlp, 0o755);
     const runner = new DownloadRunner(new RuntimeManager(paths, false, []));
     const request: StartDownloadPayload = { taskId: '00000000-0000-4000-8000-000000000000', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', videoId: 'dQw4w9WgXcQ', kind: 'video' };
@@ -33,7 +33,7 @@ describe('DownloadRunner integration', () => {
     const directory = await mkdtemp(join(tmpdir(), 'local-downloader-queue-test-'));
     const paths = createRuntimePaths(directory);
     await mkdir(paths.runtimeDirectory, { recursive: true });
-    await writeFile(paths.ytDlp, `#!${process.execPath}\nsetTimeout(() => { process.stdout.write('LOCAL_DOWNLOADER_COMPLETE|${directory}/video.mp4\\n'); }, 80);\n`);
+    await writeFile(paths.ytDlp, `#!${process.execPath}\nsetTimeout(() => {\n  require('node:fs').writeFileSync('${directory}/video.mp4', 'fake video');\n  process.stdout.write('LOCAL_DOWNLOADER_COMPLETE|${directory}/video.mp4\\n');\n}, 80);\n`);
     await chmod(paths.ytDlp, 0o755);
     const runner = new DownloadRunner(new RuntimeManager(paths, false, []), 1);
     const settings = structuredClone(DEFAULT_HELPER_SETTINGS);
